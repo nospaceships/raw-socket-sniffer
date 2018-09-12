@@ -1,15 +1,19 @@
 
 # raw-socket-sniffer - Packet capture on Windows without drivers
 
-This repository contains an program which demonstrates how to capture IP
-packets on Windows using just raw sockets.
+This repository contains the source for a program which demonstrates how to
+capture IP packets on Windows using just raw sockets.
 
 It requires no additional software, such as WinPCAP or npcap, and will simply
 use existing operating system functionality.
 
-# Getting Started
+The program saves captured packets to a file in PCAP format so that it can be
+opened on a separate host with a tool which can read that file format
+installed.
 
-Once the project has been checked out, simply run the following command to
+# Build
+
+Once the project has been checked out simply run the following command to
 compile it:
 
     cd <repository>
@@ -18,25 +22,25 @@ compile it:
 The file `raw-socket-sniffer.exe` will be placed in to the root of the
 repository.
 
-# Running a Packet Capture
+# Capture
 
-Transfer the `raw-socket-sniffer.exe` program to the host on which packet
-capture should be performed.  Then run the following command to capture
+Once built, transfer the `raw-socket-sniffer.exe` program to the host on which
+packet capture should be performed.  Then run the following command to capture
 packets:
 
-    raw-socket-sniffer.exe x.x.x.x capture.cap
+    raw-socket-sniffer.exe 127.0.0.1 capture.cap
 
-Replace `x.x.x.x` with the IP address for which packets should be captured,
+Replace `127.0.0.1` with the IP address for which packets should be captured,
 and the file `capture.cap` with the name of the file to which to write packets.
 
 Once finished simply press `CTRL+C` to stop the program.
 
-Transfer the `capture.cap` to a host with Wireshark (or similar program)
-installed, and then open it using the tool.
+Transfer the `capture.cap` to a host with Wireshark (or another similar
+program) installed, and then open the `capture.cap` file using the tool.
 
 # Changes
 
-## Version 1.0.0 - 16/06/2018
+## Version 1.0.0 - 12/09/2018
 
  * Initial version
 

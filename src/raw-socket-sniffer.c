@@ -12,7 +12,31 @@
 #include <iphlpapi.h>
 
 // We use defines and structures copied from libpcap to synthesize a PCAP file.
-#include "pcap.h"
+#define PCAP_VERSION_MAJOR 2
+#define PCAP_VERSION_MINOR 4
+
+#define DLT_EN10MB 1
+
+struct pcap_timeval {
+	int32_t tv_sec;
+	int32_t tv_usec;
+};
+
+struct pcap_file_header {
+	uint32_t magic;
+	uint16_t version_major;
+	uint16_t version_minor;
+	int32_t thiszone;
+	uint32_t sigfigs;
+	uint32_t snaplen;
+	uint32_t linktype;
+};
+
+struct pcap_sf_pkthdr {
+	struct pcap_timeval ts;
+	uint32_t caplen;
+	uint32_t len;
+};
 
 // Size of the buffer we use to read packets from the network.
 #define BUFFER_SIZE ((256*256) - 1)
@@ -21,6 +45,8 @@
 #define EPOCH_BIAS 116444736000000000
 #define UNITS_PER_SEC  10000000
 
+// Normally we would break this up into smaller functions, but here we lay out
+// all the steps to capture packets using raw sockets one step after another.
 int main(int argc, char** argv) {
 	if (argc != 3) {
 		fprintf(stderr, "usage: %s <interface-ip> <capture-file>\n", argv[0]);
