@@ -1,39 +1,37 @@
 
-# raw-socket-sniffer - Packet capture on Windows without drivers
+# raw-socket-sniffer
 
-This repository contains the source for a program which demonstrates how to
-capture IP packets on Windows using just raw sockets.
+Packet capture on Windows without drivers!
 
-It requires no additional software, such as WinPCAP or npcap, and will simply
+This repository contains several programs which demonstrate how to capture IP
+packets on Windows using just raw sockets.
+
+They require no additional software, such as WinPCAP or npcap, and will simply
 use existing operating system functionality.
 
-The program saves captured packets to a file in PCAP format so that it can be
-opened on a separate host with a tool which can read that file format
-installed.
+Each program saves captured packets to a file in PCAP format so that it can be
+opened on a separate host with a tool such as Wireshark.
 
 An implementation in PowerShell and the C programming language is given.  The
 C program is considerably faster than the PowerShell program, and it also has
 the advantage that Windows Firewall can grant permissions to a specific program
-instead of all `PowerShell.exe`
+instead of all programs run by `PowerShell.exe`.
 
 # Ethernet Headers
 
 The programs in this repository use raw sockets to capture IP packets.  A side
-effect of this is that layer 2 headers, i.e. the ethernet header, is not
-included in the data received.
+effect of this is that no ethernet header is included in the data received.  If
+it is required to capture ethernet header data then another tool should be used.
 
-If it is required to capture ethernet header data then another tool should be
-used as valid ethernet headers are not captured by this tool.
+Since these programs produce PCAP files, and PCAP files include fully formed
+packets, a fake ethernet header is synthesized for each packet using the all
+zeros source and destination ethernet addresses.
 
-Since these tools produce PCAP files, and PCAP files include ethernet, a fake
-ethernet header is synthesized for each packet using the all zeros source and
-destination ethernet addresses.
-
-This does not affect the other protocol layers, and, for example, TCP streams
+This does not affect other protocol layers, and, for example, TCP streams
 can still be reassembled, and IP layer source and destination addresses are
 all still valid.
 
-# Implementation in PowerShell
+# PowerShell Implementation
 
 Transfer the `raw-socket-sniffer.ps1` program to the host on which packet
 capture should be performed.  Then run the following command to capture packets:
@@ -52,12 +50,16 @@ the `PowerShell.exe` program must be permitted similar to the following:
 
     netsh advfirewall firewall add rule name="Windows PowerShell" dir="in" action="allow" program="%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe"
 
+**NOTE** This may not be desired, in which case the C program should be
+considered so that the filewall permission can be given only to the single
+compiled C program.
+
 Once finished simply press `CTRL+C` to stop the program.
 
 Transfer the `capture.cap` to a host with Wireshark installed (or another
 similar program), and then open the `capture.cap` file.
 
-# Implementation in C
+# C Implementation
 
 Once the project has been checked out simply run the following command to
 compile the C program:
