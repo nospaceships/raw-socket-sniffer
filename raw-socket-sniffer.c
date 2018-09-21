@@ -90,7 +90,8 @@ int main(int argc, char** argv) {
 		exit(-1);
 	}
 
-	// Captured IP packets sent and received to a specific IP address.
+	// Captured IP packets sent and received by the network interface the
+	// specified IP address is associated with.
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = inet_addr(argv[1]);

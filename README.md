@@ -104,6 +104,10 @@ similar program), and then open the `capture.cap` file.
  * Document firewall requirement
  * Implement a PowerShell raw socket sniffer
 
+## Version 2.0.1 - 21/09/2018
+
+ * Correct various typos in source comments and the README.md
+
 # License
 
 Copyright 2018 NoSpaceships Ltd

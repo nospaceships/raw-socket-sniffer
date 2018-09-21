@@ -11,7 +11,6 @@ param(
 ## Create a PCAP file header.  This is the same as doing the following in
 ## libpcap:
 ##
-##    // Create a PCAP file header.
 ##    struct pcap_file_header hdr;
 ##    hdr.magic = 0xa1b2c3d4;
 ##    hdr.version_major = PCAP_VERSION_MAJOR;
@@ -27,7 +26,7 @@ param(
         0xff, 0xff, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00
 
 ##
-## Open the capture file, deleting if already exists, and write a PCAP file
+## Open the capture file, deleting if it already exists, and write a PCAP file
 ## header.
 ##
 if ([IO.File]::Exists($CaptureFile)) {
