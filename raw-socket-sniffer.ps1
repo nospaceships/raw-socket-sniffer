@@ -1,5 +1,11 @@
 
 ##
+## Copyright 2018 NoSpaceships Ltd
+##
+
+
+
+##
 ## Usage: raw-socket-sniffer.ps1 -InterfaceIp 127.0.0.1 -CaptureFile capture.cap
 ##
 param(
