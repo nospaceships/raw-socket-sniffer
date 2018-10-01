@@ -38,8 +38,13 @@ struct pcap_sf_pkthdr {
 	uint32_t len;
 };
 
-// Size of the buffer we use to read packets from the network.
-#define BUFFER_SIZE ((256*256) - 1)
+// Various sizes and offsets for our packet read buffer.
+#define BUFFER_SIZE_HDR sizeof(struct pcap_sf_pkthdr)
+#define BUFFER_SIZE_PKT ((256*256) - 1)
+#define BUFFER_SIZE_ETH 14
+#define BUFFER_SIZE_IP (BUFFER_SIZE_PKT - BUFFER_SIZE_ETH)
+#define BUFFER_OFFSET_ETH sizeof(struct pcap_sf_pkthdr)
+#define BUFFER_OFFSET_IP (BUFFER_OFFSET_ETH + BUFFER_SIZE_ETH)
 
 // A couple of defines used to calculate high resolution timestamps.
 #define EPOCH_BIAS 116444736000000000
@@ -73,7 +78,7 @@ int main(int argc, char** argv) {
 	hdr.version_major = PCAP_VERSION_MAJOR;
 	hdr.version_minor = PCAP_VERSION_MINOR;
 	hdr.thiszone = 0;
-	hdr.snaplen = BUFFER_SIZE;
+	hdr.snaplen = BUFFER_SIZE_PKT;
 	hdr.sigfigs = 0;
 	hdr.linktype = DLT_EN10MB;
 
@@ -114,10 +119,10 @@ int main(int argc, char** argv) {
 	}
 
 	// First 14 bytes are a fake ethernet header with IPv4 as the protocol.
-	unsigned char buffer[BUFFER_SIZE];
-	memset(buffer, 0, BUFFER_SIZE);
-	buffer[12] = 0x08;
-	struct pcap_sf_pkthdr pkt;
+	unsigned char buffer[BUFFER_SIZE_HDR + BUFFER_SIZE_PKT];
+	memset(buffer, 0, sizeof(buffer));
+	buffer[BUFFER_OFFSET_ETH + 12] = 0x08;
+	struct pcap_sf_pkthdr* pkt = (struct pcap_sf_pkthdr*) buffer;
 
 	// Reuse this on each loop to calculate a high resolution timestamp.
 	union {
@@ -128,7 +133,7 @@ int main(int argc, char** argv) {
 	// Read packets forever.
 	while (1) {
 		// Read the next packet, blocking forever.
-		int rc = recv(sd, (char*) buffer + 14, BUFFER_SIZE - 14, 0);
+		int rc = recv(sd, (char*) buffer + BUFFER_OFFSET_IP, BUFFER_SIZE_IP, 0);
 		if (rc == SOCKET_ERROR) {
 			fprintf(stderr, "recv() failed: %u", WSAGetLastError());
 			exit(-1);
@@ -145,19 +150,13 @@ int main(int argc, char** argv) {
 		uint32_t ms = ft.ft_64 % UNITS_PER_SEC;
 
 		// Set out PCAP packet header fields.
-		pkt.ts.tv_sec = ctime;
-		pkt.ts.tv_usec = ms;
-		pkt.caplen = rc + 14;
-		pkt.len = rc + 14;
+		pkt->ts.tv_sec = ctime;
+		pkt->ts.tv_usec = ms;
+		pkt->caplen = rc + BUFFER_SIZE_ETH;
+		pkt->len = rc + BUFFER_SIZE_ETH;
 
-		// Write our PCAP packet header
-		if (fwrite((char*) &pkt, sizeof(pkt), 1, fp) != 1) {
-			fprintf(stderr, "fwrite(pcap_sf_pkthdr) failed: %d", errno);
-			exit(-1);
-		}
-
-		// Write our packet data immediately after the PCAP packet header.
-		if (fwrite(buffer, rc + 14, 1, fp) != 1) {
+		// Output our packet data and header in a single write.
+		if (fwrite(buffer, rc + BUFFER_SIZE_ETH + BUFFER_SIZE_HDR, 1, fp) != 1) {
 			fprintf(stderr, "fwrite(buffer) failed: %d", errno);
 			exit(-1);
 		}

@@ -61,18 +61,22 @@ $null = $socket.IOControl([Net.Sockets.IOControlCode]::ReceiveAll,
 $epoch = Get-Date -Date "01/01/1970"
 
 ##
-## Create a receive buffer.  The first 14 bytes are a fake ethernet header
-## and we set the next protocol to IPv4.
+## Create a receive buffer.  The first 16 bytes are a PCAP packet header, and
+## the next 14 bytes are a fake ethernet header - in which we set the next
+## protocol to IPv4.
 ##
-$buffer = New-Object Byte[] $socket.ReceiveBufferSize
-$buffer[12] = 0x08
+$buffer_offset = 16
+$buffer = New-Object Byte[] ($socket.ReceiveBufferSize + $buffer_offset)
+$buffer[$buffer_offset + 12] = 0x08
 
 while($true) {
     ##
     ## IP packets read here will NOT include an ethernet header.  Our buffer
-    ## has a fake ethernet header so we read into the buffer after that.
+    ## has a PCAP packet header and a fake ethernet header so we read into the
+    ## buffer after that.
     ##
-    $rc = $socket.Receive($buffer, 14, $buffer.Length - 14, 0) + 14
+    $rc = $socket.Receive($buffer, $buffer_offset + 14,
+            $buffer.Length - ($buffer_offset + 14), 0) + 14
 
     ##
     ## Calculate date/time the packet was captured.  This is not accurate!
@@ -93,13 +97,13 @@ while($true) {
     ##     uint32_t len;
     ## };
     ##
-    $file.Write([BitConverter]::GetBytes($ctime), 0, 4)
-    $file.Write([BitConverter]::GetBytes($timespan.Milliseconds), 0, 4)
-    $file.Write([BitConverter]::GetBytes($rc), 0, 4)
-    $file.Write([BitConverter]::GetBytes($rc), 0, 4)
+    [Buffer]::BlockCopy([BitConverter]::GetBytes($ctime), 0, $buffer, 0, 4)
+    [Buffer]::BlockCopy([BitConverter]::GetBytes($timespan.Milliseconds), 0, $buffer, 4, 4)
+    [Buffer]::BlockCopy([BitConverter]::GetBytes($rc), 0, $buffer, 8, 4)
+    [Buffer]::BlockCopy([BitConverter]::GetBytes($rc), 0, $buffer, 12, 4)
 
     ##
     ## Now write the packet we captured.
     ##
-    $file.Write($buffer, 0, $rc)
+    $file.Write($buffer, 0, $rc + $buffer_offset)
 }
