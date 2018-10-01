@@ -1,13 +1,11 @@
 
 # raw-socket-sniffer
 
-Packet capture on Windows without drivers!
-
 This repository contains several programs which demonstrate how to capture IP
 packets on Windows using just raw sockets.
 
-They require no additional software, such as WinPCAP or npcap, and will simply
-use existing operating system functionality.
+The programs require no additional software, such as WinPCAP or npcap, and will
+simply use existing operating system functionality.
 
 Each program saves captured packets to a file in PCAP format so that it can be
 opened on a separate host with a tool such as Wireshark.
@@ -36,9 +34,7 @@ all still valid.
 Transfer the `raw-socket-sniffer.ps1` program to the host on which packet
 capture should be performed.  Then run the following command to capture packets:
 
-    PowerShell.exe -ExecutionPolicy bypass raw-socket-sniffer.ps1 `
-            -InterfaceIp "127.0.0.1" `
-            -CaptureFile "capture.cap"
+    PowerShell.exe -ExecutionPolicy bypass raw-socket-sniffer.ps1 "127.0.0.1" "capture.cap"
 
 Replace `127.0.0.1` with an IP address from the network interface for which
 packets should be captured, and the file `capture.cap` with the name of the
@@ -107,6 +103,10 @@ similar program), and then open the `capture.cap` file.
 ## Version 2.0.1 - 21/09/2018
 
  * Correct various typos in source comments and the README.md
+
+## Version 2.1.0 - 01/10/2018
+
+ * Minor updates to the README.md file
 
 # License
 
