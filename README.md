@@ -107,6 +107,8 @@ similar program), and then open the `capture.cap` file.
 ## Version 2.1.0 - 01/10/2018
 
  * Minor updates to the README.md file
+ * Output PCAP packet header and packet data in a single write() to prevent
+   corruption on exception
 
 # License
 
